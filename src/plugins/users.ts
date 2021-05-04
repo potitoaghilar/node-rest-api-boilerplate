@@ -4,12 +4,15 @@ import User from "../models/user";
 import {idValidatorObject} from "../shared/validator/id-validator";
 import UserRepository from "../repositories/user-repository";
 import boom from '@hapi/boom';
+import {healthPluginName} from "./health";
+import {prismaPluginName} from "./prisma";
 
-const controllerName = 'UserController';
+const usersPluginName = 'app/users'
+const controllerName = 'UserController'
 
 const usersController: Hapi.Plugin<undefined> = {
-    name: 'app/users',
-    dependencies: ['healthCheck', 'prisma'],
+    name: usersPluginName,
+    dependencies: [healthPluginName, prismaPluginName],
     register: (server: Hapi.Server) => {
         server.route([
             {
@@ -143,4 +146,7 @@ async function updateHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return h.response(updatedUser).code(200)
 }
 
-export default usersController
+export {
+    usersPluginName,
+    usersController
+}

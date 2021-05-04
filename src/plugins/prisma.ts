@@ -1,5 +1,7 @@
 import Hapi from '@hapi/hapi'
 import { PrismaClient } from '@prisma/client'
+import {healthPluginName} from "./health";
+import Utils from "../helpers/utils";
 
 declare module '@hapi/hapi' {
     interface ServerApplicationState {
@@ -7,13 +9,15 @@ declare module '@hapi/hapi' {
     }
 }
 
+const prismaPluginName = 'prisma'
+
 const prisma: Hapi.Plugin<undefined> = {
-    name: 'prisma',
-    dependencies: ['healthCheck'],
+    name: prismaPluginName,
+    dependencies: [healthPluginName],
     register: (server: Hapi.Server) => {
         
         server.app.prisma = new PrismaClient({
-            log: process.env.NODE_ENV !== 'production' ? ['error', 'warn', 'query'] : []
+            log: Utils.isDev() ? ['error', 'warn', 'query'] : []
         })
 
         server.ext({
@@ -26,4 +30,7 @@ const prisma: Hapi.Plugin<undefined> = {
     }
 }
 
-export default prisma
+export {
+    prismaPluginName,
+    prisma
+}

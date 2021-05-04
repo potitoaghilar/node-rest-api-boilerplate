@@ -1,18 +1,24 @@
 import Hapi from '@hapi/hapi'
-import healthController from "./plugins/health"
-import usersController from "./plugins/users"
 import 'reflect-metadata';
 import {swaggerPlugins} from "./swagger/swagger-service";
-import prisma from "./plugins/prisma";
 import {basicAuth, basicAuthValidation} from "./auth/basic-auth";
+import {healthController} from "./plugins/health";
+import {prisma} from "./plugins/prisma";
+import {usersController} from "./plugins/users";
+import {oath2plugin} from "./plugins/oauth2";
+import Utils from "./helpers/utils";
+require('dotenv').config()
 
 /**
  * Environmental variables:
  *  - HOST: localhost
  *  - PORT: 3000
- *  - NODE_ENV: "production" | "<empty>"
+ *  - NODE_ENV: "production" | "dev"
  *  - DATABASE_URL
  */
+
+const startTime = Date.now()
+console.log('Starting server...')
 
 const server: Hapi.Server = Hapi.server({
     host: process.env.HOST || 'localhost',
@@ -21,14 +27,17 @@ const server: Hapi.Server = Hapi.server({
 
 export async function start(): Promise<Hapi.Server> {
 
-    await server.register(basicAuth);
-    server.auth.strategy('basicAuth', 'basic', { validate: basicAuthValidation });
+    // TODO improve. Now used only for swagger
+    // Registering basic auth
+    await server.register(basicAuth)
+    server.auth.strategy('basicAuth', 'basic', { validate: basicAuthValidation })
 
     // Register application plugins
     await server.register([
-        healthController,
         prisma,
-        usersController
+        healthController,
+        usersController,
+        oath2plugin
     ], {
         routes: {
             prefix: '/api'
@@ -36,12 +45,14 @@ export async function start(): Promise<Hapi.Server> {
     })
 
     // Register swagger endpoint
-    if (process.env.NODE_ENV !== 'production') {
+    if (Utils.isDev()) {
         await server.register(swaggerPlugins);
     }
 
     // Start server
     await server.start()
+
+    console.log(`Total boot time: ${(Date.now() - startTime) / 1000} seconds`)
     console.log(`Server running on ${server.info.uri}`)
 
     return server

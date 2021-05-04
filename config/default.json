@@ -2,7 +2,7 @@
     "showErrors": true,
     "swagger": {
         "title": "My First Example API",
-        "description": "A simple API create using Hapi, Boom, Joi, Joiful and Swagger",
+        "description": "A simple API create using Hapi, Boom, Joi, Joiful, Swagger and OAuth2 standard",
         "contact": {
             "name": "Potito Aghilar",
             "url": "https://potito.web.app/",

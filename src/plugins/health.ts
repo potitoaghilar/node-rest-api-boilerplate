@@ -1,8 +1,10 @@
 
 import Hapi, {ResponseToolkit} from '@hapi/hapi'
 
+const healthPluginName = 'healthCheck'
+
 const healthController: Hapi.Plugin<undefined> = {
-    name: 'healthCheck',
+    name: healthPluginName,
     register: (server: Hapi.Server) => {
         server.route({
             method: 'GET',
@@ -14,4 +16,7 @@ const healthController: Hapi.Plugin<undefined> = {
     }
 }
 
-export default healthController;
+export {
+    healthPluginName,
+    healthController
+};
