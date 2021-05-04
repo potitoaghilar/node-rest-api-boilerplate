@@ -4,7 +4,7 @@ import {healthPluginName} from "./health";
 import boom from '@hapi/boom'
 import Utils from "../helpers/utils";
 
-const oauthPluginName = 'oauth2'
+const oauthPluginName = 'core/oauth2'
 const controllerName = 'OAuth2Controller'
 
 const oath2plugin: Hapi.Plugin<undefined> = {

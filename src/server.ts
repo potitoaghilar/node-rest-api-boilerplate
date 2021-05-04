@@ -7,6 +7,7 @@ import {prisma} from "./plugins/prisma";
 import {usersController} from "./plugins/users";
 import {oath2plugin} from "./plugins/oauth2";
 import Utils from "./helpers/utils";
+import {paginatorPlugin} from "./plugins/paginator";
 require('dotenv').config()
 
 /**
@@ -35,12 +36,13 @@ export async function start(): Promise<Hapi.Server> {
     // Register application plugins
     await server.register([
         prisma,
+        paginatorPlugin,
         healthController,
         usersController,
         oath2plugin
     ], {
         routes: {
-            prefix: '/api'
+            prefix: '/api',
         }
     })
 

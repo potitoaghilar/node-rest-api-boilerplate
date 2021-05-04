@@ -1,7 +1,7 @@
 
 import Hapi, {ResponseToolkit} from '@hapi/hapi'
 
-const healthPluginName = 'healthCheck'
+const healthPluginName = 'core/health'
 
 const healthController: Hapi.Plugin<undefined> = {
     name: healthPluginName,

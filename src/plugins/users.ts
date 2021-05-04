@@ -22,7 +22,7 @@ const usersController: Hapi.Plugin<undefined> = {
                 options: {
                     description: 'Get all users',
                     notes: 'Get all users in the system.',
-                    tags: ['api', controllerName]
+                    tags: ['api', controllerName],
                 }
             },
             {

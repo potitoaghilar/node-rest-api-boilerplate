@@ -9,7 +9,7 @@ declare module '@hapi/hapi' {
     }
 }
 
-const prismaPluginName = 'prisma'
+const prismaPluginName = 'core/prisma'
 
 const prisma: Hapi.Plugin<undefined> = {
     name: prismaPluginName,
