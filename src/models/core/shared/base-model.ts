@@ -1,4 +1,4 @@
-import * as jf from "joiful"
+import * as joiful from "joiful"
 import Joi from "joi"
 
 const internalModelMapping: { className: string, fieldName: string, type: typeof BaseModel }[] = []
@@ -18,19 +18,24 @@ function model(objectClass: typeof BaseModel) {
 class BaseModel {
 
     public static getValidator(): Joi.ObjectSchema {
-        return (jf.getSchema(this) as Joi.ObjectSchema).label(this.name.toLowerCase())
+        return (joiful.getSchema(this) as Joi.ObjectSchema).label(this.name.toLowerCase())
     }
 
-    public static parseJSON<T>(json: object): T {
+    public static fromJSON<T>(json: object): T {
         const obj = Object.assign(new this(), json)
         Object.keys(obj).forEach(key => {
             const result = internalModelMapping.find(x => x.className == this.name && x.fieldName == key)
             if (result) {
                 // @ts-ignore
-                obj[key] = result.type.parseJSON<result.type>(obj[key])
+                obj[key] = result.type.fromJSON<result.type>(obj[key])
             }
         })
+        // @ts-ignore
         return obj as T
+    }
+
+    public asJSON(): object {
+        return JSON.parse(JSON.stringify(this))
     }
 
 }

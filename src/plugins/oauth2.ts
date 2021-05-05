@@ -12,6 +12,8 @@ import TokenRepository from "../repositories/core/oauth2/token-repository"
 import fetch from "node-fetch";
 import Profile from "../models/core/oauth2/profile";
 import {add} from "date-fns";
+import StateIpBind from '../models/core/oauth2/stateIpBind'
+import SignedRequest from "../models/core/oauth2/signed-request";
 
 const crypto = require('crypto')
 const oauthPluginName = 'core/oauth2'
@@ -38,7 +40,7 @@ const oath2plugin: Hapi.Plugin<undefined> = {
                 handler: authorizationHandler,
                 options: {
                     description: 'Authorize user',
-                    notes: 'Authorize a specific user. Do not use in Swagger, this will perform a redirect.',
+                    notes: 'Authorize a specific user.',
                     tags: ['api', controllerName],
                     validate: {
                         query: AuthorizationRequest.getValidator()
@@ -77,26 +79,32 @@ async function authenticationHandler(request: Hapi.Request, h: Hapi.ResponseTool
     // Get authentication URI
     const uri = Oauth2Provider.getInstance().code.getUri({ state })
 
+    // Generate StateIpBind
+    const stateIpBind = new StateIpBind()
+    stateIpBind.state = state
+    stateIpBind.ip = request.info.remoteAddress
+
     // Save state for future check
     // TODO Implement some logic to remove expired token from Token table
-    await StateCodeRepository.addStateCode(state, request.info.remoteAddress)
+    await StateCodeRepository.addStateCode(stateIpBind)
 
     return h.response({ authUrl: uri }).code(200)
 }
 
 async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
-    const state = request.query.state
-    const ip = request.info.remoteAddress
+    const stateIpBind = new StateIpBind()
+    stateIpBind.state = request.query.state
+    stateIpBind.ip = request.info.remoteAddress
 
     // Check if state is valid
-    if (!await StateCodeRepository.checkStateCodeValidation(state, ip)) {
+    if (!await StateCodeRepository.checkStateCodeValidation(stateIpBind)) {
         // State and IP doesn't match
         return boom.forbidden()
     }
 
     // Remove state from valid states
-    await StateCodeRepository.removeStateCode(state, ip)
+    await StateCodeRepository.removeStateCode(stateIpBind)
 
     // Exchange code with session and refresh tokens
     let oauthToken: ClientOAuth2.Token
@@ -106,33 +114,29 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
         return boom.forbidden('Token expired. Login again')
     }
 
-    // Get user id from authorization server
-    const signedRequest = await oauthToken.sign({
+    // Get user info from authorization server
+    const signedRequest = await oauthToken.sign<SignedRequest>({
         method: 'GET',
         url: Oauth2Provider.getUserInfoEndpoint(),
-        headers: { }
     })
     const userInfo = await fetch(signedRequest.url, {
         method: signedRequest.method,
-        headers: signedRequest.headers
+        headers: (signedRequest.headers || { }) as any
     })
-    const profile = Profile.parseJSON<Profile>(await userInfo.json())
-
-    // Check if previous
+    const profile = Profile.fromJSON<Profile>(await userInfo.json())
 
     // TODO Implement some logic to remove expired token from Token table
-    // Save token and refresh token to database
-    await TokenRepository.saveTokenUserBind(profile.getUserId(), oauthToken.accessToken, oauthToken.refreshToken, add(new Date(), { seconds: parseInt(oauthToken.data.expires_in) }))
+    // Save token, refresh token and expiration date to database
+    const tokenExpirationDate = add(new Date(), { seconds: parseInt(oauthToken.data.expires_in) })
+    await TokenRepository.saveTokenUserBind(profile.getUserId(), oauthToken.accessToken, oauthToken.refreshToken, tokenExpirationDate)
 
-    // Redirect to home
-    console.log('HERE')
-    const authorizedRedirect = oauthToken.sign({
-        method: 'GET',
-        url: '/',
-        headers: { Authorization: '' }
+    // Send back access token to user
+    return h.response({
+        user: profile,
+        accessToken: oauthToken.accessToken,
+        expirationDate: tokenExpirationDate,
+        expiresIn: oauthToken.data.expires_in
     })
-    console.log(authorizedRedirect)
-    return h.redirect(authorizedRedirect.url).header('Authorization', authorizedRedirect.headers.Authorization)
 }
 
 export {

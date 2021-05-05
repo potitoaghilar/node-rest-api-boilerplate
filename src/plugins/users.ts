@@ -93,7 +93,7 @@ async function getUsersHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
 async function getUserHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
-    const userId = parseInt(request.params.id)
+    const userId = request.params.id
 
     const user = await UserRepository.getUser(userId)
     if (user) {
@@ -105,7 +105,7 @@ async function getUserHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
 async function createHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
-    const userRequest = User.parseJSON<User>(request.payload as object)
+    const userRequest = User.fromJSON<User>(request.payload as object)
 
     // Check if email is unique
     const isNewEmail = !(await UserRepository.getUserByEmail(userRequest.email))
@@ -121,7 +121,7 @@ async function createHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
 async function deleteHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
-    const userId = parseInt(request.params.id)
+    const userId = request.params.id
 
     if (!(await UserRepository.getUser(userId))) {
         return boom.notFound()
@@ -133,9 +133,9 @@ async function deleteHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
 async function updateHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
-    const userId = parseInt(request.params.id)
+    const userId = request.params.id
 
-    const user = await User.parseJSON<User>(request.payload as object)
+    const user = await User.fromJSON<User>(request.payload as object)
 
     if (!(await UserRepository.getUser(userId))) {
         return boom.notFound()

@@ -1,24 +1,28 @@
 import User from "../models/user"
-import {PrismaClient} from "@prisma/client"
 import PrismaProvider from "./core/prisma/prisma-provider"
 
 export default class UserRepository {
 
     public static async getUsers(): Promise<User[]> {
-        return (await PrismaProvider.getInstance().user.findMany()).map((user: object) => User.parseJSON<User>(user))
+        return (await PrismaProvider.getInstance().user.findMany()).map((user: object) => User.fromJSON<User>(user))
     }
 
-    public static async getUser(id: number): Promise<User | null> {
+    public static async getUser(id: string): Promise<User | null> {
         const user = await PrismaProvider.getInstance().user.findUnique({
             where: { id },
         })
-        return user ? User.parseJSON<User>(user) : null
+        return user ? User.fromJSON<User>(user) : null
     }
 
     public static async createUser(user: User): Promise<User> {
-        return User.parseJSON<User>(
+        return User.fromJSON<User>(
             await PrismaProvider.getInstance().user.create({
-                data: user,
+                data: {
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    social: user.social?.asJSON(),
+                },
             })
         )
     }
@@ -27,17 +31,17 @@ export default class UserRepository {
         const user = PrismaProvider.getInstance().user.findUnique({
             where: { email }
         })
-        return user ? User.parseJSON(user) : null
+        return user ? User.fromJSON(user) : null
     }
 
-    public static async deleteUser(id: number): Promise<void> {
+    public static async deleteUser(id: string): Promise<void> {
         await PrismaProvider.getInstance().user.delete({
             where: { id }
         })
     }
 
-    public static async updateUser(id: number, user: User): Promise<User> {
-        return User.parseJSON<User>(
+    public static async updateUser(id: string, user: User): Promise<User> {
+        return User.fromJSON<User>(
             await PrismaProvider.getInstance().user.update({
                 where: { id },
                 data: user
@@ -45,8 +49,8 @@ export default class UserRepository {
         )
     }
 
-    public static async patchUser(id: number, user: Partial<User>): Promise<User> {
-        return User.parseJSON<User>(
+    public static async patchUser(id: string, user: Partial<User>): Promise<User> {
+        return User.fromJSON<User>(
             await PrismaProvider.getInstance().user.update({
                 where: { id },
                 data: user

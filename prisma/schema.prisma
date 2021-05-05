@@ -25,7 +25,7 @@ model Token {
 
 model User {
   // id        Int     @id @default(autoincrement())
-  id        String  @id
+  id        String  @id @default(uuid())
   email     String  @unique
   firstName String
   lastName  String
