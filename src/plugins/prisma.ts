@@ -1,13 +1,6 @@
 import Hapi from '@hapi/hapi'
-import { PrismaClient } from '@prisma/client'
-import {healthPluginName} from "./health";
-import Utils from "../helpers/utils";
-
-declare module '@hapi/hapi' {
-    interface ServerApplicationState {
-        prisma: PrismaClient
-    }
-}
+import {healthPluginName} from "./health"
+import PrismaProvider from "../repositories/core/prisma/prisma-provider"
 
 const prismaPluginName = 'core/prisma'
 
@@ -15,15 +8,13 @@ const prisma: Hapi.Plugin<undefined> = {
     name: prismaPluginName,
     dependencies: [healthPluginName],
     register: (server: Hapi.Server) => {
-        
-        server.app.prisma = new PrismaClient({
-            log: Utils.isDev() ? ['error', 'warn', 'query'] : []
-        })
+
+        PrismaProvider.init()
 
         server.ext({
             type: 'onPostStop',
             method: async (server: Hapi.Server) => {
-                server.app.prisma.$disconnect()
+                PrismaProvider.getInstance().$disconnect()
             },
         })
 

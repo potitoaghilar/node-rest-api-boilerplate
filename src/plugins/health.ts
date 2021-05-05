@@ -12,11 +12,11 @@ const healthController: Hapi.Plugin<undefined> = {
             handler: (_, h: ResponseToolkit) => {
                 return h.response({ status: 'HEALTHY' }).code(200)
             }
-        });
+        })
     }
 }
 
 export {
     healthPluginName,
     healthController
-};
+}

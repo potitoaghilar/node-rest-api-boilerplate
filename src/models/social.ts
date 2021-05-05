@@ -1,5 +1,5 @@
-import {BaseModel} from "./base-model";
-import {string} from "joiful";
+import {BaseModel} from "./core/shared/base-model"
+import {string} from "joiful"
 
 export default class Social extends BaseModel {
 
@@ -16,7 +16,7 @@ export default class Social extends BaseModel {
     website?: string
 
     concatSocials() {
-        return `Facebook: ${this.facebook} | Twitter: ${this.twitter} | GitHub: ${this.github} | Website: ${this.website}`;
+        return `Facebook: ${this.facebook} | Twitter: ${this.twitter} | GitHub: ${this.github} | Website: ${this.website}`
     }
 
 }

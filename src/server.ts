@@ -1,13 +1,13 @@
 import Hapi from '@hapi/hapi'
-import 'reflect-metadata';
-import {swaggerPlugins} from "./swagger/swagger-service";
-import {basicAuth, basicAuthValidation} from "./auth/basic-auth";
-import {healthController} from "./plugins/health";
-import {prisma} from "./plugins/prisma";
-import {usersController} from "./plugins/users";
-import {oath2plugin} from "./plugins/oauth2";
-import Utils from "./helpers/utils";
-import {paginatorPlugin} from "./plugins/paginator";
+import 'reflect-metadata'
+import {swaggerPlugins} from "./swagger/swagger-service"
+import {basicAuth, basicAuthValidation} from "./auth/basic-auth"
+import {healthController} from "./plugins/health"
+import {prisma} from "./plugins/prisma"
+import {usersController} from "./plugins/users"
+import {oath2plugin} from "./plugins/oauth2"
+import Utils from "./helpers/utils"
+import {paginatorPlugin} from "./plugins/paginator"
 require('dotenv').config()
 
 /**
@@ -48,7 +48,7 @@ export async function start(): Promise<Hapi.Server> {
 
     // Register swagger endpoint
     if (Utils.isDev()) {
-        await server.register(swaggerPlugins);
+        await server.register(swaggerPlugins)
     }
 
     // Start server

@@ -1,5 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -7,11 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model State {
+  state String
+  ip    String
+
+  @@id([state, ip])
+}
+
+model Token {
+  id             Int      @id @default(autoincrement())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  accessToken    String
+  refreshToken   String
+  expirationDate DateTime
+}
 
 model User {
-  id        Int    @default(autoincrement()) @id
-  email     String @unique
+  // id        Int     @id @default(autoincrement())
+  id        String  @id
+  email     String  @unique
   firstName String
   lastName  String
   social    Json?
+  Token     Token[]
 }

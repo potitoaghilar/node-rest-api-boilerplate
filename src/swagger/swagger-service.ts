@@ -1,8 +1,8 @@
-const config = require('config');
-const Pack = require('../../package');
-const Inert = require('@hapi/inert');
-const Vision = require('@hapi/vision');
-const HapiSwagger = require('hapi-swagger');
+const config = require('config')
+const Pack = require('../../package')
+const Inert = require('@hapi/inert')
+const Vision = require('@hapi/vision')
+const HapiSwagger = require('hapi-swagger')
 
 const swaggerOptions = {
     info: {
@@ -34,7 +34,7 @@ const swaggerOptions = {
         }
     ],
     sortEndpoints: 'method'
-};
+}
 
 const swaggerPlugins = [
     Inert,
@@ -43,6 +43,6 @@ const swaggerPlugins = [
         plugin: HapiSwagger,
         options: swaggerOptions
     }
-];
+]
 
-export { swaggerPlugins };
+export { swaggerPlugins }

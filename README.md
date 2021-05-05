@@ -40,3 +40,10 @@ Generate Prisma client:
 ```bash
 $ npx prisma generate
 ```
+
+### Prisma Studio
+
+To introspect database use:
+```bash
+$ npx prisma studio
+```

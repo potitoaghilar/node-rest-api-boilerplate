@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi from "joi"
 
 const idValidatorObject = Joi.object({
     id: Joi.string().pattern(/^[0-9]+$/),
@@ -6,4 +6,4 @@ const idValidatorObject = Joi.object({
 
 export {
     idValidatorObject
-};
+}

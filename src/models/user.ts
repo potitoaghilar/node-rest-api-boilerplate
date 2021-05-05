@@ -1,11 +1,11 @@
-import Social from "./social";
-import {object, string} from "joiful";
-import {BaseModel, model} from "./base-model";
+import Social from "./social"
+import {object, string} from "joiful"
+import {BaseModel, model} from "./core/shared/base-model"
 
 export default class User extends BaseModel {
 
     @string().required()
-    firstName!: string;
+    firstName!: string
 
     @string().required()
     lastName!: string
@@ -15,7 +15,7 @@ export default class User extends BaseModel {
 
     @model(Social)
     @object({ objectClass: Social }).optional()
-    social?: Social;
+    social?: Social
 
 }
 

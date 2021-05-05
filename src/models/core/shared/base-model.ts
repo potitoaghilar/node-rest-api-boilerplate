@@ -1,7 +1,7 @@
-import * as jf from "joiful";
-import Joi from "joi";
+import * as jf from "joiful"
+import Joi from "joi"
 
-const internalModelMapping: { className: string, fieldName: string, type: typeof BaseModel }[] = [];
+const internalModelMapping: { className: string, fieldName: string, type: typeof BaseModel }[] = []
 
 function model(objectClass: typeof BaseModel) {
     return function(target: BaseModel, propertyKey: string) {

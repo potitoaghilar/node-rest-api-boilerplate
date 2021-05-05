@@ -1,3 +1,10 @@
 {
-    "showErrors": false
+    "showErrors": false,
+    "oauth": {
+        "authorizationUrl": "https://<change-me>/authorize",
+        "tokenUrl": "https://<change-me>/oauth/token",
+        "userInfoURI": "https://<change-me>/userinfo",
+        "redirectUri": "https://<change-me>/api/oauth/authorize",
+        "version": 2
+    }
 }

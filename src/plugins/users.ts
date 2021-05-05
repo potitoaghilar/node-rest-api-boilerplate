@@ -1,11 +1,11 @@
 import Hapi from '@hapi/hapi'
-import handleValidationError from "../shared/validator/error";
-import User from "../models/user";
-import {idValidatorObject} from "../shared/validator/id-validator";
-import UserRepository from "../repositories/user-repository";
-import boom from '@hapi/boom';
-import {healthPluginName} from "./health";
-import {prismaPluginName} from "./prisma";
+import handleValidationError from "../shared/validator/error"
+import User from "../models/user"
+import {idValidatorObject} from "../shared/validator/id-validator"
+import UserRepository from "../repositories/user-repository"
+import boom from '@hapi/boom'
+import {healthPluginName} from "./health"
+import {prismaPluginName} from "./prisma"
 
 const usersPluginName = 'app/users'
 const controllerName = 'UserController'
@@ -87,7 +87,7 @@ const usersController: Hapi.Plugin<undefined> = {
 }
 
 async function getUsersHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const users = await UserRepository.getUsers(request.server.app.prisma)
+    const users = await UserRepository.getUsers()
     return h.response(users).code(200)
 }
 
@@ -95,7 +95,7 @@ async function getUserHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
     const userId = parseInt(request.params.id)
 
-    const user = await UserRepository.getUser(request.server.app.prisma, userId)
+    const user = await UserRepository.getUser(userId)
     if (user) {
         return h.response(user).code(200)
     } else {
@@ -108,13 +108,13 @@ async function createHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const userRequest = User.parseJSON<User>(request.payload as object)
 
     // Check if email is unique
-    const isNewEmail = !(await UserRepository.getUserByEmail(request.server.app.prisma, userRequest.email))
+    const isNewEmail = !(await UserRepository.getUserByEmail(userRequest.email))
 
     if (!isNewEmail) {
         return boom.badRequest('Email already exists')
     }
 
-    const userResponse = await UserRepository.createUser(request.server.app.prisma, userRequest)
+    const userResponse = await UserRepository.createUser(userRequest)
 
     return h.response(userResponse).code(201)
 }
@@ -123,11 +123,11 @@ async function deleteHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
     const userId = parseInt(request.params.id)
 
-    if (!(await UserRepository.getUser(request.server.app.prisma, userId))) {
+    if (!(await UserRepository.getUser(userId))) {
         return boom.notFound()
     }
 
-    await UserRepository.deleteUser(request.server.app.prisma, userId)
+    await UserRepository.deleteUser(userId)
     return h.response().code(204)
 }
 
@@ -137,11 +137,11 @@ async function updateHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
     const user = await User.parseJSON<User>(request.payload as object)
 
-    if (!(await UserRepository.getUser(request.server.app.prisma, userId))) {
+    if (!(await UserRepository.getUser(userId))) {
         return boom.notFound()
     }
 
-    const updatedUser = await UserRepository.updateUser(request.server.app.prisma, userId, user)
+    const updatedUser = await UserRepository.updateUser(userId, user)
 
     return h.response(updatedUser).code(200)
 }
