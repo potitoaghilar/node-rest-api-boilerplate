@@ -17,7 +17,12 @@ const basicAuthValidation = async (request: Hapi.Request, username: string, pass
     return { isValid, credentials }
 }
 
-export {
-    basicAuth,
-    basicAuthValidation,
+export default async function registerBasicAuthStrategy(server: Hapi.Server) {
+
+    // Registering basic auth plugin
+    await server.register(basicAuth)
+
+    // Create basic auth strategy
+    server.auth.strategy('basicAuth', 'basic', {validate: basicAuthValidation})
+
 }

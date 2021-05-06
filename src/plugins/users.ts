@@ -4,8 +4,8 @@ import User from "../models/user"
 import {idValidatorObject} from "../shared/validator/id-validator"
 import UserRepository from "../repositories/user-repository"
 import boom from '@hapi/boom'
-import {healthPluginName} from "./health"
-import {prismaPluginName} from "./prisma"
+import {healthPluginName} from "./core/health"
+import {prismaPluginName} from "./core/prisma"
 
 const usersPluginName = 'app/users'
 const controllerName = 'UserController'
@@ -23,6 +23,7 @@ const usersController: Hapi.Plugin<undefined> = {
                     description: 'Get all users',
                     notes: 'Get all users in the system.',
                     tags: ['api', controllerName],
+                    auth: 'jwt'
                 }
             },
             {
@@ -36,7 +37,8 @@ const usersController: Hapi.Plugin<undefined> = {
                     validate: {
                         params: idValidatorObject,
                         failAction: handleValidationError,
-                    }
+                    },
+                    auth: 'jwt'
                 },
             },
             {
@@ -51,6 +53,7 @@ const usersController: Hapi.Plugin<undefined> = {
                         payload: User.getValidator(),
                         failAction: handleValidationError
                     },
+                    auth: 'jwt'
                 },
             },
             {
@@ -65,6 +68,7 @@ const usersController: Hapi.Plugin<undefined> = {
                         params: idValidatorObject,
                         failAction: handleValidationError,
                     },
+                    auth: 'jwt'
                 },
             },
             {
@@ -80,6 +84,7 @@ const usersController: Hapi.Plugin<undefined> = {
                         payload: User.getValidator(),
                         failAction: handleValidationError,
                     },
+                    auth: 'jwt'
                 },
             },
         ])

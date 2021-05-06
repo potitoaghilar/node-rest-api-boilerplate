@@ -28,15 +28,18 @@
     "config": "^3.3.6",
     "date-fns": "^2.15.0",
     "dotenv": "^8.2.0",
+    "hapi-auth-jwt2": "^10.2.0",
     "hapi-swagger": "^14.1.2",
     "joi": "^17.3.0",
     "joiful": "^3.0.2",
+    "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/hapi__hapi": "^20.0.8",
     "@types/jest": "^26.0.9",
+    "@types/jsonwebtoken": "^8.5.1",
     "@types/node-fetch": "^2.5.10",
     "jest": "^26.3.0",
     "prisma": "^2.22.0",

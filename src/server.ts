@@ -1,13 +1,14 @@
 import Hapi from '@hapi/hapi'
 import 'reflect-metadata'
 import {swaggerPlugins} from "./swagger/swagger-service"
-import {basicAuth, basicAuthValidation} from "./auth/basic-auth"
-import {healthController} from "./plugins/health"
-import {prisma} from "./plugins/prisma"
+import registerBasicAuthStrategy from "./auth/basic-auth"
+import {healthController} from "./plugins/core/health"
+import {prisma} from "./plugins/core/prisma"
 import {usersController} from "./plugins/users"
-import {oath2plugin} from "./plugins/oauth2"
+import {oath2plugin} from "./plugins/core/oauth2"
 import Utils from "./helpers/utils"
-import {paginatorPlugin} from "./plugins/paginator"
+import {paginatorPlugin} from "./plugins/core/paginator"
+import registerBearerTokenStrategy from "./auth/jwt";
 require('dotenv').config()
 
 /**
@@ -28,10 +29,9 @@ const server: Hapi.Server = Hapi.server({
 
 export async function start(): Promise<Hapi.Server> {
 
-    // TODO improve. Now used only for swagger
-    // Registering basic auth
-    await server.register(basicAuth)
-    server.auth.strategy('basicAuth', 'basic', { validate: basicAuthValidation })
+    // Auth strategies
+    await registerBasicAuthStrategy(server)
+    await registerBearerTokenStrategy(server)
 
     // Register application plugins
     await server.register([

@@ -1,5 +1,5 @@
-import PrismaProvider from "./core/prisma/prisma-provider";
-import StateIpBind from "../models/core/oauth2/stateIpBind";
+import PrismaProvider from "../prisma/prisma-provider";
+import StateIpBind from "../../../models/core/oauth2/stateIpBind";
 
 export default class StateCodeRepository {
 

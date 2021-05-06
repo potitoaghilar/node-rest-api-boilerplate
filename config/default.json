@@ -2,7 +2,7 @@
     "showErrors": true,
     "swagger": {
         "title": "My First Example API",
-        "description": "A simple API create using Hapi, Boom, Joi, Joiful, Pagination plugin, Swagger and OAuth2 client.",
+        "description": "A simple API create using Hapi, Boom, Joiful, Pagination plugin, Swagger, OAuth2.",
         "contact": {
             "name": "Potito Aghilar",
             "url": "https://potito.web.app/",
@@ -14,9 +14,7 @@
         }
     },
     "oauth": {
-        "authorizationUri": "https://qwee.eu.auth0.com/authorize",
-        "tokenUri": "https://qwee.eu.auth0.com/oauth/token",
-        "userInfoURI": "https://qwee.eu.auth0.com/userinfo",
+        "openidConfigURI": "https://qwee.eu.auth0.com/.well-known/openid-configuration",
         "redirectUri": "http://localhost:3000/api/oauth/authorize",
         "version": 2
     }

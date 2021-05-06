@@ -25,11 +25,19 @@ export default class Profile extends BaseModel {
     email_verified!: boolean
 
     getAuthProvider(): string {
-        return this.sub.split('|')[0]
+        return Profile.getAuthProvider(this)
     }
 
     getUserId(): string {
-        return this.sub.split('|')[1]
+        return Profile.getUserId(this)
+    }
+
+    static getAuthProvider(profile: Profile) {
+        return profile.sub.split('|')[0]
+    }
+
+    static getUserId(profile: Profile) {
+        return profile.sub.split('|')[1]
     }
 
 }

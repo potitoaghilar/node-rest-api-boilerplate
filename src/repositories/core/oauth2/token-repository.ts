@@ -1,13 +1,16 @@
 import PrismaProvider from "../prisma/prisma-provider";
-import Token from "../../../models/core/oauth2/token";
+import TokenUserBind from "../../../models/core/oauth2/token-user-bind";
 
 export default class TokenRepository {
 
-    public static async saveTokenUserBind(userId: string, accessToken: string, refreshToken: string, expirationDate: Date): Promise<Token> {
-        return Token.fromJSON(
+    public static async saveTokenUserBind(tokenUserBind: TokenUserBind): Promise<TokenUserBind> {
+        return TokenUserBind.fromJSON(
             await PrismaProvider.getInstance().token.create({
                 data: {
-                    userId, accessToken, refreshToken, expirationDate: expirationDate
+                    userId: tokenUserBind.user.getUserId(),
+                    accessToken: tokenUserBind.accessToken,
+                    refreshToken: tokenUserBind.refreshToken,
+                    expirationDate: tokenUserBind.expirationDate
                 }
             })
         )

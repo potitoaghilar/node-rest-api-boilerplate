@@ -2,20 +2,21 @@ import Hapi from '@hapi/hapi'
 import {prismaPluginName} from "./prisma"
 import {healthPluginName} from "./health"
 import boom from '@hapi/boom'
-import Utils from "../helpers/utils"
-import StateCodeRepository from "../repositories/state-code-repository"
-import Oauth2Provider from "../repositories/core/oauth2/oauth2-provider"
-import Joi from "joi";
-import AuthorizationRequest from "../models/core/oauth2/authorization-request"
+import Utils from "../../helpers/utils"
+import StateCodeRepository from "../../repositories/core/oauth2/state-code-repository"
+import Oauth2Provider from "../../repositories/core/oauth2/oauth2-provider"
+import AuthorizationRequest from "../../models/core/oauth2/authorization-request"
 import ClientOAuth2 from "client-oauth2"
-import TokenRepository from "../repositories/core/oauth2/token-repository"
+import TokenRepository from "../../repositories/core/oauth2/token-repository"
 import fetch from "node-fetch";
-import Profile from "../models/core/oauth2/profile";
+import Profile from "../../models/core/oauth2/profile";
 import {add} from "date-fns";
-import StateIpBind from '../models/core/oauth2/stateIpBind'
-import SignedRequest from "../models/core/oauth2/signed-request";
+import StateIpBind from '../../models/core/oauth2/stateIpBind'
+import SignedRequest from "../../models/core/oauth2/signed-request";
+import TokenUserBind from "../../models/core/oauth2/token-user-bind";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
-const crypto = require('crypto')
 const oauthPluginName = 'core/oauth2'
 const controllerName = 'OAuth2Controller'
 
@@ -77,7 +78,7 @@ async function authenticationHandler(request: Hapi.Request, h: Hapi.ResponseTool
     const state = crypto.randomBytes(20).toString('hex')
 
     // Get authentication URI
-    const uri = Oauth2Provider.getInstance().code.getUri({ state })
+    const uri = (await Oauth2Provider.getInstance()).code.getUri({ state })
 
     // Generate StateIpBind
     const stateIpBind = new StateIpBind()
@@ -109,7 +110,7 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
     // Exchange code with session and refresh tokens
     let oauthToken: ClientOAuth2.Token
     try {
-        oauthToken = (await Oauth2Provider.getInstance().code.getToken(request.url))
+        oauthToken = await ((await Oauth2Provider.getInstance()).code.getToken(request.url))
     } catch (e) {
         return boom.forbidden('Token expired. Login again')
     }
@@ -127,16 +128,20 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
 
     // TODO Implement some logic to remove expired token from Token table
     // Save token, refresh token and expiration date to database
-    const tokenExpirationDate = add(new Date(), { seconds: parseInt(oauthToken.data.expires_in) })
-    await TokenRepository.saveTokenUserBind(profile.getUserId(), oauthToken.accessToken, oauthToken.refreshToken, tokenExpirationDate)
+    const tokenUserBind = new TokenUserBind()
+    tokenUserBind.user = profile
+    tokenUserBind.accessToken = oauthToken.accessToken
+    tokenUserBind.refreshToken = oauthToken.refreshToken
+    tokenUserBind.expirationDate = add(new Date(), { seconds: parseInt(oauthToken.data.expires_in) })
+    await TokenRepository.saveTokenUserBind(tokenUserBind)
+
+    const jwtToken = jwt.sign({
+        user: profile,
+        accessToken: oauthToken.accessToken
+    }, process.env.JWT_SECRET || crypto.randomBytes(20).toString('hex'))
 
     // Send back access token to user
-    return h.response({
-        user: profile,
-        accessToken: oauthToken.accessToken,
-        expirationDate: tokenExpirationDate,
-        expiresIn: oauthToken.data.expires_in
-    })
+    return h.response({ token: jwtToken })
 }
 
 export {
