@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   mysql:
     image: mysql:8
     environment:
@@ -13,4 +14,19 @@ services:
     expose:
       - 3306
     volumes:
-      - ./database/:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+
+  #postgres:
+  #  image: postgres:9.6
+  #  environment:
+  #    POSTGRES_DB: 'hydra'
+  #    POSTGRES_USER: 'hydra'
+  #    POSTGRES_PASSWORD: 'secret'
+  #  ports:
+  #    - 5432:5432
+  #  networks:
+  #    - restapi
+
+
+volumes:
+  mysql-data:

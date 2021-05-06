@@ -8,7 +8,6 @@ import Method = Lifecycle.Method
 const jwt2 = require('hapi-auth-jwt2')
 import boom from '@hapi/boom'
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 
 export default async function registerBearerTokenStrategy(server: Hapi.Server) {
 
@@ -34,7 +33,7 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
 
             // Check if access token is in database
             const userTokenBind = TokenUserBind.fromJSON<TokenUserBind>(
-                await PrismaProvider.getInstance().token.findUnique({
+                await PrismaProvider.getInstance().token.findFirst({
                     where: {
                         userId: Profile.getUserId(tokenData.user),
                         accessToken: tokenData.accessToken
@@ -42,15 +41,21 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
                 })
             )
             if (!userTokenBind) {
-                return { isValid: false }
+                return { isValid: false, response: boom.unauthorized }
             }
 
+            // TODO resolve bad request here
             // Validate access token with authorization server
             const accessToken = tokenData.accessToken
+            const body = JSON.stringify({ token: accessToken })
             const validationResponse = await fetch(introspectionEndpoint, {
                 method: 'POST',
-                body: `token=${accessToken}`
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Length': body.length.toString()
+                },
             })
+            console.log(validationResponse)
 
             // If access token is expired try to refresh it
             if (!validationResponse.ok) {
@@ -73,11 +78,17 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
                         }
                     })
 
+                    // Exit if JWT secret is not set
+                    if (!process.env.JWT_SECRET) {
+                        console.error('ERROR: JWT secret not set')
+                        return { isValid: false, response: boom.badImplementation() }
+                    }
+
                     // Generate JWT token
                     const jwtToken = jwt.sign({
                         user: tokenData.user,
                         accessToken: refreshedToken.accessToken
-                    }, process.env.JWT_SECRET || crypto.randomBytes(20).toString('hex'))
+                    }, process.env.JWT_SECRET)
 
                     // Notify client to change access token for next requests
                     return { isValid: true, credentials: { token: jwtToken } }
@@ -104,7 +115,7 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
     // Send update JWT token in authorization header if needed
     server.ext('onPreResponse', ((request: Hapi.Request, h: Hapi.ResponseToolkit) => {
         const {response} = request;
-        if (!boom.isBoom(response) && typeof request.auth.credentials.token == 'string') {
+        if (!boom.isBoom(response) && request.auth.credentials && typeof request.auth.credentials.token == 'string') {
             response.header('Authorization', request.auth.credentials.token)
         }
         return h.continue;

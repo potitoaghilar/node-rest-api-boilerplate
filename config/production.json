@@ -2,6 +2,7 @@
     "showErrors": false,
     "oauth": {
         "openidConfigURI": "https://<change-me>/.well-known/openid-configuration",
+        "introspectionURI": "https://<change-me>//oauth2/introspect",
         "redirectUri": "https://<change-me>/api/oauth/authorize",
         "version": 2
     }

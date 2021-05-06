@@ -5,4 +5,5 @@ export default interface IOpenidConfig {
     userinfo_endpoint: string
     scopes_supported: string[]
     introspection_endpoint: string
+    revocation_endpoint: string
 }

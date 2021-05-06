@@ -13,10 +13,14 @@ require('dotenv').config()
 
 /**
  * Environmental variables:
- *  - HOST: localhost
- *  - PORT: 3000
- *  - NODE_ENV: "production" | "dev"
+ *  - HOST
+ *  - PORT
+ *  - NODE_ENV
  *  - DATABASE_URL
+ *  - OAUTH2_CLIENT_ID
+ *  - OAUTH2_CLIENT_SECRET
+ *  - JWT_SECRET
+ *  - NODE_TLS_REJECT_UNAUTHORIZED
  */
 
 const startTime = Date.now()

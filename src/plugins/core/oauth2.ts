@@ -94,11 +94,18 @@ async function authenticationHandler(request: Hapi.Request, h: Hapi.ResponseTool
 
 async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
+    // Check if requested scopes matches
+    const oauthProvider = await Oauth2Provider.getProviderInstance()
+    const scopes = oauthProvider.getOpenidConfig().scopes_supported
+    const scopesCheck = request.query.scope.split(' ').every((scope: string) => scopes.includes(scope))
+    if (!scopesCheck) {
+        return boom.forbidden()
+    }
+
+    // Check if state is valid
     const stateIpBind = new StateIpBind()
     stateIpBind.state = request.query.state
     stateIpBind.ip = request.info.remoteAddress
-
-    // Check if state is valid
     if (!await StateCodeRepository.checkStateCodeValidation(stateIpBind)) {
         // State and IP doesn't match
         return boom.forbidden()
@@ -110,9 +117,10 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
     // Exchange code with session and refresh tokens
     let oauthToken: ClientOAuth2.Token
     try {
-        oauthToken = await ((await Oauth2Provider.getInstance()).code.getToken(request.url))
+        oauthToken = await ((await Oauth2Provider.getInstance()).code.getToken(request.url.href))
     } catch (e) {
-        return boom.forbidden('Token expired. Login again')
+        console.error(e)
+        return boom.forbidden('Failed to get secure token from authorization server.')
     }
 
     // Get user info from authorization server
@@ -135,10 +143,16 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
     tokenUserBind.expirationDate = add(new Date(), { seconds: parseInt(oauthToken.data.expires_in) })
     await TokenRepository.saveTokenUserBind(tokenUserBind)
 
+    // Exit if JWT secret is not set
+    if (!process.env.JWT_SECRET) {
+        console.error('ERROR: JWT secret not set')
+        return { isValid: false, response: boom.badImplementation() }
+    }
+
     const jwtToken = jwt.sign({
         user: profile,
         accessToken: oauthToken.accessToken
-    }, process.env.JWT_SECRET || crypto.randomBytes(20).toString('hex'))
+    }, process.env.JWT_SECRET)
 
     // Send back access token to user
     return h.response({ token: jwtToken })

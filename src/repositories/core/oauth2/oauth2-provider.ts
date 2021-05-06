@@ -51,6 +51,7 @@ export default class Oauth2Provider {
     private static async fetchConfig() {
         const openidConfig = await fetch(config.get('oauth.openidConfigURI'), {method: 'GET'})
         instance.openidConfig = await openidConfig.json()
+        instance.openidConfig.introspection_endpoint = config.get('oauth.introspectionURI')
     }
 
     static getUserInfoEndpoint(): string {

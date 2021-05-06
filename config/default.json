@@ -14,7 +14,8 @@
         }
     },
     "oauth": {
-        "openidConfigURI": "https://qwee.eu.auth0.com/.well-known/openid-configuration",
+        "openidConfigURI": "http://localhost:4444/.well-known/openid-configuration",
+        "introspectionURI": "http://localhost:4445/oauth2/introspect",
         "redirectUri": "http://localhost:3000/api/oauth/authorize",
         "version": 2
     }

@@ -9,4 +9,7 @@ export default class AuthorizationRequest extends BaseModel {
     @string().required()
     code!: string
 
+    @string().required()
+    scope!: string
+
 }

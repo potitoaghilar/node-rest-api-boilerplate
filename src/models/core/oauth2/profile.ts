@@ -1,6 +1,7 @@
 import {BaseModel} from "../shared/base-model";
 import {boolean, date, string} from "joiful";
 
+// Sample class - edit based on your authorization server configuration
 export default class Profile extends BaseModel {
 
     @string().required()
@@ -24,20 +25,12 @@ export default class Profile extends BaseModel {
     @boolean().required()
     email_verified!: boolean
 
-    getAuthProvider(): string {
-        return Profile.getAuthProvider(this)
-    }
-
     getUserId(): string {
         return Profile.getUserId(this)
     }
 
-    static getAuthProvider(profile: Profile) {
-        return profile.sub.split('|')[0]
-    }
-
     static getUserId(profile: Profile) {
-        return profile.sub.split('|')[1]
+        return profile.sub
     }
 
 }
