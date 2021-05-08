@@ -15,6 +15,12 @@ export default class TokenUserBind extends BaseModel {
     refreshToken!: string
 
     @date().required()
-    expirationDate!: Date
+    accessTokenExpirationDate!: Date
+
+    @date().optional()
+    refreshTokenExpirationDate!: Date | null
+
+    @object().required()
+    rawData!: object
 
 }

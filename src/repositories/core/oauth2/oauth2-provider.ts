@@ -32,7 +32,7 @@ export default class Oauth2Provider {
 
     }
 
-    static async getProviderInstance(): Promise<Oauth2Provider> {
+    static async getInstance(): Promise<Oauth2Provider> {
         if (!instance) {
             instance = new Oauth2Provider()
             await instance.init()
@@ -40,8 +40,8 @@ export default class Oauth2Provider {
         return instance
     }
 
-    static async getInstance(): Promise<ClientOAuth2> {
-        return (await this.getProviderInstance()).client
+    static async getClient(): Promise<ClientOAuth2> {
+        return (await this.getInstance()).client
     }
 
     getOpenidConfig(): IOpenidConfig {

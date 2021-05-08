@@ -8,6 +8,8 @@ import Method = Lifecycle.Method
 const jwt2 = require('hapi-auth-jwt2')
 import boom from '@hapi/boom'
 import jwt from "jsonwebtoken";
+import ClientOAuth2 from "client-oauth2";
+import TokenRepository from "../repositories/core/oauth2/token-repository";
 
 export default async function registerBearerTokenStrategy(server: Hapi.Server) {
 
@@ -23,72 +25,60 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
              * Validate token with OAuth2 introspection endpoint
              */
 
-            const oauth2Provider = await Oauth2Provider.getProviderInstance()
+            const oauth2Provider = await Oauth2Provider.getInstance()
+            const oauth2Client = await Oauth2Provider.getClient()
             const introspectionEndpoint = oauth2Provider.getOpenidConfig().introspection_endpoint
+            const userId = Profile.getUserId(tokenData.user)
 
+            // Check if introspection endpoint is set
             if (!introspectionEndpoint) {
                 console.error('ERROR: OAuth2 introspection endpoint not set')
                 return { isValid: false }
             }
 
+            // TODO on token update dies here
             // Check if access token is in database
-            const userTokenBind = TokenUserBind.fromJSON<TokenUserBind>(
-                await PrismaProvider.getInstance().token.findFirst({
-                    where: {
-                        userId: Profile.getUserId(tokenData.user),
-                        accessToken: tokenData.accessToken
-                    }
-                })
-            )
+            const userTokenBind = await TokenRepository.getTokenUserBind(userId, tokenData.accessToken)
             if (!userTokenBind) {
-                return { isValid: false, response: boom.unauthorized }
+                return { isValid: false }
             }
 
-            // TODO resolve bad request here
             // Validate access token with authorization server
             const accessToken = tokenData.accessToken
-            const body = JSON.stringify({ token: accessToken })
-            const validationResponse = await fetch(introspectionEndpoint, {
+            const validationResponse = await (await fetch(introspectionEndpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Content-Length': body.length.toString()
-                },
-            })
-            console.log(validationResponse)
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `token=${accessToken}`
+            })).json()
 
             // If access token is expired try to refresh it
-            if (!validationResponse.ok) {
+            if (!validationResponse.active) {
 
-                // Get refresh token from database
-                const refreshToken = userTokenBind.refreshToken
-
-                const oauthToken = (await Oauth2Provider.getInstance()).createToken(accessToken, refreshToken, 'bearer', { })
+                // Generate token from rawData
+                const oauthToken = oauth2Client.createToken(userTokenBind.rawData as ClientOAuth2.Data)
 
                 try {
 
                     // Try to refresh access code
-                    const refreshedToken = await oauthToken.refresh()
+                    const refreshedOauthToken = await oauthToken.refresh()
 
-                    // Update new token to database
-                    await PrismaProvider.getInstance().token.update({
-                        where: { refreshToken },
-                        data: {
-                            accessToken: refreshedToken.accessToken
-                        }
-                    })
+                    // Update new tokens to database
+                    await TokenRepository.updateTokenUserBind(userId, oauthToken, refreshedOauthToken)
 
                     // Exit if JWT secret is not set
                     if (!process.env.JWT_SECRET) {
                         console.error('ERROR: JWT secret not set')
-                        return { isValid: false, response: boom.badImplementation() }
+                        return { isValid: false }
                     }
 
                     // Generate JWT token
                     const jwtToken = jwt.sign({
                         user: tokenData.user,
-                        accessToken: refreshedToken.accessToken
+                        accessToken: refreshedOauthToken.accessToken
                     }, process.env.JWT_SECRET)
+
+                    // TODO remove
+                    console.log(jwtToken)
 
                     // Notify client to change access token for next requests
                     return { isValid: true, credentials: { token: jwtToken } }
@@ -96,9 +86,7 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
                 } catch (ex) {
 
                     // Remove refresh token from database
-                    await PrismaProvider.getInstance().token.delete({
-                        where: { refreshToken }
-                    })
+                    await TokenRepository.removeTokenUserBind(oauthToken)
 
                     // If refresh token is expired, force authenticate again
                     return { isValid: false }
@@ -107,8 +95,7 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
 
             }
 
-            const isValid = (await validationResponse.json()).active
-            return { isValid };
+            return { isValid: validationResponse.active };
         },
     })
 

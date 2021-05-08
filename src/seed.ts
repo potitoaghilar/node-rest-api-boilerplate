@@ -2,7 +2,7 @@ import PrismaProvider from "./repositories/core/prisma/prisma-provider";
 
 
 async function createFirstUser() {
-    return PrismaProvider.getInstance().user.create({
+    return PrismaProvider.getClient().user.create({
         data: {
             id: 'foo@bar.com',
             email: 'foo@bar.com',

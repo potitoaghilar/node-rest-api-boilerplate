@@ -1,86 +1,36 @@
 ## REST API Node Boilerplate
 
-### Databases initialization
+### Base services setup
 
-We have 2 databases:
- - `mysql` database for our main app
- - `postgresql` database for authorization server
+> Warning: for production ready environments change this part as you prefer. This is a simple example, setting up a strong OAuth2 authorization server. Advanced configurations are out of the scope of this guide
 
-Start `mysql` database with:
+Services spawned in this demo are:
+ - `mysql` database
+ - `postgresql` database
+ - `hydra-migrate` 
+
+Generate OAuth2 server secret:
+```bash
+$ export LC_CTYPE=C; cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
+```
+
+Save it in `.env*`
+
+> Store SECRETS_SYSTEM otherwise you will lose access to authorization server
+
+Start all services with:
 ```bash
 $ docker-compose up -d
 ```
 
-Stop `mysql` database with:
+Stop  all services with:
 ```bash
 $ docker-compose down
 ```
 
-### OAuth2 authorization server (POC guide)
-
-> Warning: for production ready environments change this part as you prefer. This is a simple example, setting up a strong OAuth2 authorization server. Advanced configurations are out of the scope of this guide 
-
-Firstly create a docker network:
-```bash
-$ docker network create hydranet
-```
-
-In order to deploy OAuth2 server deploy a PostgreSQL:
-```bash
-$ docker run \
-  --network hydranet \
-  --name hydra-postgres \
-  -e POSTGRES_USER=hydra \
-  -e POSTGRES_PASSWORD=secret \
-  -e POSTGRES_DB=hydra \
-  -d postgres:9.6
-```
-
-set environmental variables:
-```bash
-$ export SECRETS_SYSTEM=$(export LC_CTYPE=C; cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-$ export DSN=postgres://hydra:secret@hydra-postgres:5432/hydra?sslmode=disable
-```
-
-> Store SECRETS_SYSTEM otherwise you will lose access to authorization server
-
-See all environmental variables supported by Hydra:
-```bash
-$ docker run -it --rm --entrypoint hydra oryd/hydra:v1.10.2 help serve
-```
-
-Start database migrations:
-```bash
-$ docker run -it --rm \
-  --network hydranet \
-  oryd/hydra:v1.10.2 \
-  migrate sql --yes $DSN
-```
-
-Run server:
-```bash
-$ docker run -d \
-  --name hydra-server \
-  --network hydranet \
-  -p 4444:4444 \
-  -p 4445:4445 \
-  -e SECRETS_SYSTEM=$SECRETS_SYSTEM \
-  -e DSN=$DSN \
-  -e URLS_SELF_ISSUER=http://localhost:4444/ \
-  -e URLS_CONSENT=http://localhost:9020/consent \
-  -e URLS_LOGIN=http://localhost:9020/login \
-  oryd/hydra:v1.10.2 serve all \
-  --dangerous-force-http
-```
-
-Check if it is running:
-```bash
-$ docker logs hydra-server
-```
-
 Create your first client:
 ```bash
-$ docker exec hydra-server \
+$ docker exec hydra \
   hydra clients create \
     --endpoint http://127.0.0.1:4445/ \
     --id KoxHwD6t027ZyPKoeRZuICc3BQO3xP1d \

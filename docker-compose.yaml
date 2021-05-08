@@ -4,6 +4,7 @@ services:
 
   mysql:
     image: mysql:8
+    container_name: mysql
     environment:
       MYSQL_DATABASE: 'db'
       MYSQL_USER: 'user'
@@ -16,17 +17,63 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
-  #postgres:
-  #  image: postgres:9.6
-  #  environment:
-  #    POSTGRES_DB: 'hydra'
-  #    POSTGRES_USER: 'hydra'
-  #    POSTGRES_PASSWORD: 'secret'
-  #  ports:
-  #    - 5432:5432
-  #  networks:
-  #    - restapi
+  postgres:
+    image: postgres:13.2
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: 'hydra'
+      POSTGRES_USER: 'hydra'
+      POSTGRES_PASSWORD: 'secret'
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data:delegated
 
+  hydra-migrate:
+    image: oryd/hydra:v1.10.2
+    container_name: hydra-migrate
+    environment:
+      - DSN=postgres://hydra:secret@postgres:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: migrate sql -e --yes
+    restart: on-failure
+    depends_on:
+      - postgres
+
+  hydra:
+    image: oryd/hydra:v1.10.2
+    container_name: hydra
+    ports:
+      - 4444:4444 # Public port
+      - 4445:4445 # Admin port
+    command: serve all --dangerous-force-http
+    depends_on:
+      - hydra-migrate
+    environment:
+      - URLS_SELF_ISSUER=http://127.0.0.1:4444/
+      - URLS_SELF_PUBLIC=http://hydra:4444/
+      - URLS_CONSENT=http://127.0.0.1:9020/consent
+      - URLS_LOGIN=http://127.0.0.1:9020/login
+      - URLS_LOGOUT=http://127.0.0.1:9020/logout
+      - DSN=postgres://hydra:secret@postgres:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+      - SECRETS_SYSTEM=${SECRETS_SYSTEM}
+      - TTL_ACCESS_TOKEN=30s # 1 hour before expiration
+      - TTL_REFRESH_TOKEN=720h # 30 days before expiration
+      - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
+      - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=youReallyNeedToChangeThis
+      - SERVE_COOKIES_SAME_SITE_MODE=Lax
+      - LOG_LEAK_SENSITIVE_VALUES=true
+      - LOG_LEVEL=debug
+    restart: unless-stopped
+
+  frontend:
+    image: oryd/hydra-login-consent-node:v1.3.2
+    container_name: frontend
+    environment:
+      HYDRA_ADMIN_URL: http://hydra:4445
+    ports:
+      - 9020:3000
 
 volumes:
   mysql-data:
+  postgresql-data:

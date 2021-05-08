@@ -7,24 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model State {
-  state String
-  ip    String
+model StateIpBind {
+  state     String
+  ip        String
+  createdAt DateTime @default(now())
 
   @@id([state, ip])
 }
 
 model Token {
-  id             Int      @id @default(autoincrement())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id])
-  accessToken    String
-  refreshToken   String
-  expirationDate DateTime
+  id                         Int       @id @default(autoincrement())
+  userId                     String
+  user                       User      @relation(fields: [userId], references: [id])
+  accessToken                String    @unique
+  refreshToken               String    @unique
+  accessTokenExpirationDate  DateTime
+  refreshTokenExpirationDate DateTime?
+  rawData                    Json
+
+  @@index([accessToken, refreshToken])
 }
 
 model User {
-  // id        Int     @id @default(autoincrement())
   id        String  @id @default(uuid())
   email     String  @unique
   firstName String

@@ -21,7 +21,10 @@ class BaseModel {
         return (joiful.getSchema(this) as Joi.ObjectSchema).label(this.name.toLowerCase())
     }
 
-    public static fromJSON<T>(json: object): T {
+    public static fromJSON<T>(json: object | null): T | null {
+        if (!json) {
+            return null
+        }
         const obj = Object.assign(new this(), json)
         Object.keys(obj).forEach(key => {
             const result = internalModelMapping.find(x => x.className == this.name && x.fieldName == key)

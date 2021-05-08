@@ -11,6 +11,9 @@ const healthController: Hapi.Plugin<undefined> = {
             path: '/health',
             handler: (_, h: ResponseToolkit) => {
                 return h.response({ status: 'HEALTHY' }).code(200)
+            },
+            options: {
+                auth: false
             }
         })
     }

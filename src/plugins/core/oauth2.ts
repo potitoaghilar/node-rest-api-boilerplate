@@ -78,7 +78,7 @@ async function authenticationHandler(request: Hapi.Request, h: Hapi.ResponseTool
     const state = crypto.randomBytes(20).toString('hex')
 
     // Get authentication URI
-    const uri = (await Oauth2Provider.getInstance()).code.getUri({ state })
+    const uri = (await Oauth2Provider.getClient()).code.getUri({ state })
 
     // Generate StateIpBind
     const stateIpBind = new StateIpBind()
@@ -95,7 +95,7 @@ async function authenticationHandler(request: Hapi.Request, h: Hapi.ResponseTool
 async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
     // Check if requested scopes matches
-    const oauthProvider = await Oauth2Provider.getProviderInstance()
+    const oauthProvider = await Oauth2Provider.getInstance()
     const scopes = oauthProvider.getOpenidConfig().scopes_supported
     const scopesCheck = request.query.scope.split(' ').every((scope: string) => scopes.includes(scope))
     if (!scopesCheck) {
@@ -117,7 +117,7 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
     // Exchange code with session and refresh tokens
     let oauthToken: ClientOAuth2.Token
     try {
-        oauthToken = await ((await Oauth2Provider.getInstance()).code.getToken(request.url.href))
+        oauthToken = await ((await Oauth2Provider.getClient()).code.getToken(request.url.href))
     } catch (e) {
         console.error(e)
         return boom.forbidden('Failed to get secure token from authorization server.')
@@ -132,16 +132,11 @@ async function authorizationHandler(request: Hapi.Request, h: Hapi.ResponseToolk
         method: signedRequest.method,
         headers: (signedRequest.headers || { }) as any
     })
-    const profile = Profile.fromJSON<Profile>(await userInfo.json())
+    const profile = Profile.fromJSON<Profile>(await userInfo.json()) as Profile
 
     // TODO Implement some logic to remove expired token from Token table
     // Save token, refresh token and expiration date to database
-    const tokenUserBind = new TokenUserBind()
-    tokenUserBind.user = profile
-    tokenUserBind.accessToken = oauthToken.accessToken
-    tokenUserBind.refreshToken = oauthToken.refreshToken
-    tokenUserBind.expirationDate = add(new Date(), { seconds: parseInt(oauthToken.data.expires_in) })
-    await TokenRepository.saveTokenUserBind(tokenUserBind)
+    await TokenRepository.saveTokenUserBind(profile.getUserId(), oauthToken)
 
     // Exit if JWT secret is not set
     if (!process.env.JWT_SECRET) {

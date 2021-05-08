@@ -17,10 +17,14 @@ export default class PrismaProvider {
         instance = new PrismaProvider()
     }
 
-    static getInstance(): PrismaClient {
+    static getInstance(): PrismaProvider {
         if (!instance) {
             instance = new PrismaProvider()
         }
-        return instance.client
+        return instance
+    }
+
+    static getClient(): PrismaClient {
+        return this.getInstance().client
     }
 }

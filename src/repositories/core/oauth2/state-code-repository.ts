@@ -5,17 +5,17 @@ export default class StateCodeRepository {
 
     public static async addStateCode(stateIpBind: StateIpBind): Promise<StateIpBind> {
         return StateIpBind.fromJSON<StateIpBind>(
-            await PrismaProvider.getInstance().state.create({
+            await PrismaProvider.getClient().stateIpBind.create({
                 data: {
                     state: stateIpBind.state,
                     ip: stateIpBind.ip
                 }
             })
-        )
+        ) as StateIpBind
     }
 
     public static async checkStateCodeValidation(stateIpBind: StateIpBind): Promise<boolean> {
-        return await PrismaProvider.getInstance().state.findUnique({
+        return await PrismaProvider.getClient().stateIpBind.findUnique({
             where: {
                 state_ip: { state: stateIpBind.state, ip: stateIpBind.ip }
             }
@@ -23,7 +23,7 @@ export default class StateCodeRepository {
     }
 
     public static async removeStateCode(stateIpBind: StateIpBind): Promise<void> {
-        await PrismaProvider.getInstance().state.delete({
+        await PrismaProvider.getClient().stateIpBind.delete({
             where: {
                 state_ip: { state: stateIpBind.state, ip: stateIpBind.ip }
             }
