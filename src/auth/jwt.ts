@@ -59,11 +59,15 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
 
                 try {
 
+                    // Keep track of previous access and refresh tokens
+                    const prevAccessToken: string = oauthToken.accessToken
+                    const prevRefreshToken: string = oauthToken.refreshToken
+
                     // Try to refresh access code
                     const refreshedOauthToken = await oauthToken.refresh()
 
                     // Update new tokens to database
-                    await TokenRepository.updateTokenUserBind(userId, oauthToken, refreshedOauthToken)
+                    await TokenRepository.updateTokenUserBind(userId, prevAccessToken, prevRefreshToken, refreshedOauthToken)
 
                     // Exit if JWT secret is not set
                     if (!process.env.JWT_SECRET) {
@@ -76,9 +80,6 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
                         user: tokenData.user,
                         accessToken: refreshedOauthToken.accessToken
                     }, process.env.JWT_SECRET)
-
-                    // TODO remove
-                    console.log(jwtToken)
 
                     // Notify client to change access token for next requests
                     return { isValid: true, credentials: { token: jwtToken } }
@@ -106,6 +107,6 @@ export default async function registerBearerTokenStrategy(server: Hapi.Server) {
             response.header('Authorization', request.auth.credentials.token)
         }
         return h.continue;
-    }) as Method);
+    }) as Method)
 
 }

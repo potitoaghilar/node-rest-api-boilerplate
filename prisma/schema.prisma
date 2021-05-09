@@ -19,13 +19,13 @@ model Token {
   id                         Int       @id @default(autoincrement())
   userId                     String
   user                       User      @relation(fields: [userId], references: [id])
-  accessToken                String    @unique
-  refreshToken               String    @unique
+  accessToken                String
+  refreshToken               String
   accessTokenExpirationDate  DateTime
   refreshTokenExpirationDate DateTime?
   rawData                    Json
 
-  @@index([accessToken, refreshToken])
+  @@unique([userId, accessToken, refreshToken])
 }
 
 model User {

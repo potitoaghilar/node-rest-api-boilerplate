@@ -34,9 +34,9 @@ export default class TokenRepository {
         )
     }
 
-    public static async updateTokenUserBind(userId: string, previousOAuthToken: ClientOAuth2.Token, newOAuthToken: ClientOAuth2.Token): Promise<void> {
-        PrismaProvider.getClient().token.update({
-            where: { accessToken: previousOAuthToken.accessToken, refreshToken: previousOAuthToken.refreshToken },
+    public static async updateTokenUserBind(userId: string, previousAccessToken: string, previousRefreshToken: string, newOAuthToken: ClientOAuth2.Token): Promise<void> {
+        return PrismaProvider.getClient().token.update({
+            where: { userId_accessToken_refreshToken: { userId, accessToken: previousAccessToken, refreshToken: previousRefreshToken } },
             data: {
                 userId,
                 accessToken: newOAuthToken.accessToken,
