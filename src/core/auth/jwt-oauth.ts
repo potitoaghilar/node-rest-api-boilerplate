@@ -1,15 +1,13 @@
 import Hapi, {Lifecycle} from "@hapi/hapi"
 import fetch from "node-fetch"
-import Oauth2Provider from "../repositories/core/oauth2/oauth2-provider"
-import PrismaProvider from "../repositories/core/prisma/prisma-provider"
-import Profile from "../models/core/oauth2/profile"
-import TokenUserBind from "../models/core/oauth2/token-user-bind"
+import Oauth2Provider from "../providers/oauth2-provider"
+import Profile from "../models/oauth2/profile"
 import Method = Lifecycle.Method
 const jwt2 = require('hapi-auth-jwt2')
 import boom from '@hapi/boom'
 import jwt from "jsonwebtoken";
 import ClientOAuth2 from "client-oauth2";
-import TokenRepository from "../repositories/core/oauth2/token-repository";
+import TokenRepository from "../repositories/oauth2/token-repository";
 
 export default async function registerBearerTokenStrategy(server: Hapi.Server) {
 

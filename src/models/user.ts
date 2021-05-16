@@ -1,6 +1,6 @@
 import Social from "./social"
 import {object, string} from "joiful"
-import {BaseModel, model} from "./core/shared/base-model"
+import {BaseModel, model} from "../core/models/shared/base-model"
 
 export default class User extends BaseModel {
 

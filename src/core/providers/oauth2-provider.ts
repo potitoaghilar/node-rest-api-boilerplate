@@ -1,6 +1,6 @@
 import ClientOAuth2 from "client-oauth2"
 import fetch from "node-fetch";
-import IOpenidConfig from "../../../models/core/oauth2/iopenid-config";
+import IOpenidConfig from "../models/oauth2/interfaces/iopenid-config";
 const config = require('config')
 
 let instance: Oauth2Provider

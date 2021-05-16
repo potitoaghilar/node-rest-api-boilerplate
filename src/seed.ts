@@ -1,4 +1,4 @@
-import PrismaProvider from "./repositories/core/prisma/prisma-provider";
+import PrismaProvider from "./core/providers/prisma-provider";
 
 async function createFirstUser() {
     return PrismaProvider.getClient().user.create({

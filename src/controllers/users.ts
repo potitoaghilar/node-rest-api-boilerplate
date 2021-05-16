@@ -1,11 +1,12 @@
 import Hapi from '@hapi/hapi'
-import handleValidationError from "../shared/validator/error"
+import handleValidationError from "../core/plugins/validator/error"
 import User from "../models/user"
-import {idValidatorObject} from "../shared/validator/id-validator"
+import {idValidatorObject} from "../core/plugins/validator/validators/id-validator"
 import UserRepository from "../repositories/user-repository"
 import boom from '@hapi/boom'
-import {healthPluginName} from "./core/health"
-import {prismaPluginName} from "./core/prisma"
+import {healthPluginName} from "../core/controllers/health"
+import {prismaPluginName} from "../core/plugins/prisma/prisma"
+import PageRequest from "../core/models/paginator/page-request";
 
 const usersPluginName = 'app/users'
 const controllerName = 'UserController'
@@ -23,6 +24,9 @@ const usersController: Hapi.Plugin<undefined> = {
                     description: 'Get all users',
                     notes: 'Get all users in the system.',
                     tags: ['api', controllerName],
+                    validate: {
+                        query: PageRequest.getValidator()
+                    },
                     auth: 'jwt'
                 }
             },
@@ -92,7 +96,8 @@ const usersController: Hapi.Plugin<undefined> = {
 }
 
 async function getUsersHandler(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const users = await UserRepository.getUsers()
+    const pageRequest = PageRequest.fromJSON<PageRequest>(request.query) as PageRequest
+    const users = await UserRepository.getUsers(pageRequest)
     return h.response(users).code(200)
 }
 

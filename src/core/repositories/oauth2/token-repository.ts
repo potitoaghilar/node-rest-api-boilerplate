@@ -1,5 +1,5 @@
-import PrismaProvider from "../prisma/prisma-provider";
-import TokenUserBind from "../../../models/core/oauth2/token-user-bind";
+import PrismaProvider from "../../providers/prisma-provider";
+import TokenUserBind from "../../models/oauth2/token-user-bind";
 import ClientOAuth2 from "client-oauth2";
 import {add} from "date-fns";
 

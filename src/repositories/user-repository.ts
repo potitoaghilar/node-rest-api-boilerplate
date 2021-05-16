@@ -1,10 +1,13 @@
 import User from "../models/user"
-import PrismaProvider from "./core/prisma/prisma-provider"
+import PrismaProvider from "../core/providers/prisma-provider"
+import PageRequest from "../core/models/paginator/page-request";
+import Paginator from "../core/models/paginator/paginator";
+import IPageResponse from "../core/models/paginator/interfaces/ipage-response";
 
 export default class UserRepository {
 
-    public static async getUsers(): Promise<User[]> {
-        return (await PrismaProvider.getClient().user.findMany()).map((user: object) => User.fromJSON<User>(user))
+    public static async getUsers(pageRequest?: PageRequest): Promise<IPageResponse<User>> {
+        return new Paginator<User>(User, PrismaProvider.getClient().user, pageRequest).getPage()
     }
 
     public static async getUser(id: string): Promise<User | null> {

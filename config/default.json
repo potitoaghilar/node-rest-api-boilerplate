@@ -1,8 +1,14 @@
 {
     "showErrors": true,
+    "oauth": {
+        "openidConfigURI": "http://localhost:4444/.well-known/openid-configuration",
+        "introspectionURI": "http://localhost:4445/oauth2/introspect",
+        "redirectUri": "http://localhost:3000/api/oauth/authorize",
+        "version": 2
+    },
     "swagger": {
         "title": "My First Example API",
-        "description": "A simple API create using Hapi, Boom, Joiful, Pagination plugin, Swagger, OAuth2.",
+        "description": "A simple REST API boilerplate created using Hapi, Boom, Joiful, Pagination, Swagger and OAuth2.",
         "contact": {
             "name": "Potito Aghilar",
             "url": "https://potito.web.app/",
@@ -12,11 +18,5 @@
             "username": "admin",
             "password": "$2a$10$jbRbGT26vBCAAZnRfVbT9uUWUXQnQbF.FAS9Kwpd4NTXSN62OBCUq"
         }
-    },
-    "oauth": {
-        "openidConfigURI": "http://localhost:4444/.well-known/openid-configuration",
-        "introspectionURI": "http://localhost:4445/oauth2/introspect",
-        "redirectUri": "http://localhost:3000/api/oauth/authorize",
-        "version": 2
     }
 }

@@ -1,5 +1,5 @@
 import {PrismaClient} from "@prisma/client"
-import Utils from "../../../helpers/utils"
+import Utils from "../../helpers/utils"
 
 let instance: PrismaProvider
 

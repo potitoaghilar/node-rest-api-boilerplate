@@ -1,4 +1,4 @@
-import {BaseModel} from "./core/shared/base-model"
+import {BaseModel} from "../core/models/shared/base-model"
 import {string} from "joiful"
 
 export default class Social extends BaseModel {

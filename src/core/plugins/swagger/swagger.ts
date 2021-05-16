@@ -1,5 +1,5 @@
 const config = require('config')
-const Pack = require('../../package')
+const Pack = require('../../../../package')
 const Inert = require('@hapi/inert')
 const Vision = require('@hapi/vision')
 const HapiSwagger = require('hapi-swagger')
@@ -17,7 +17,7 @@ const swaggerOptions = {
     },
     auth: 'basicAuth',
     documentationPath: '/api-docs',
-    schemes: ['https', 'http'],
+    schemes: ['http', 'https'],
     securityDefinitions: {
         'jwt': {
             'type': 'apiKey',
