@@ -96,9 +96,9 @@ REST API endpoint:
 http://localhost:3000/api
 ```
 
-REST API endpoint:
+Swagger endpoint:
 ```
-http://localhost:3000/api
+http://localhost:3000/api-docs
 ```
 
 ### Workflow
