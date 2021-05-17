@@ -56,7 +56,7 @@ services:
       - URLS_LOGIN=http://127.0.0.1:9020/login
       - URLS_LOGOUT=http://127.0.0.1:9020/logout
       - DSN=postgres://hydra:secret@postgres:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
-      - SECRETS_SYSTEM=${SECRETS_SYSTEM}
+      - SECRETS_SYSTEM=${OAUTH_SECRET}
       - TTL_ACCESS_TOKEN=1h # 1 hour before expiration
       - TTL_REFRESH_TOKEN=720h # 30 days before expiration
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
